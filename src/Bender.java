@@ -28,13 +28,13 @@ public class Bender {
 		ben.setPort("COM3"); // Set the port to COM3 
 		ben.setVerbose(true); // Turn on debugging messages 
 		ben.connect(); 
-		ben.attachServo(RXTXRobot.SERVO1, 9); //Connect the servos to the Arduino 
-		ben.attachServo(RXTXRobot.SERVO2, 10); 
+		//ben.attachServo(RXTXRobot.SERVO1, 9); //Connect the servos to the Arduino 
+		//ben.attachServo(RXTXRobot.SERVO2, 10); 
 		
 		// Get the average thermistor reading and pring results
 		int thermistorReading = getThermistorReading();
-		System.out.println("The probe read the value: " + thermistorReading);
-		System.out.println("In volts: " + (thermistorReading * (5.0/1023.0)));
+		out.println("The probe read the value: " + thermistorReading);
+		out.println("In volts: " + (thermistorReading * (5.0/1023.0)));
 
 		//Next, select starting location
 		sc = new Scanner(System.in);
@@ -80,7 +80,7 @@ public class Bender {
 		ben.close(); 
 	}
 	
-	private int getThermistorReading() {
+	private int getThermistorReading(){
 		 int sum = 0;
 		 int readingCount = 10;
 
@@ -94,10 +94,10 @@ public class Bender {
 		 }
 
 		 //Return the average reading
-		 return sum / readingCount;
+		 return adjThermistorReading(sum / readingCount);
 	}
 	
-	private int adjThermistorReading(int reading) {
+	private int adjThermistorReading(double reading) {
 		double adjReading = reading; //make reading double
 		double intercept = 1.0; 
 		double slope = 1.0;
