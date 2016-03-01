@@ -19,7 +19,7 @@ public class Bender {
 
 	private Scanner sc;
 	private RXTXRobot ben;
-	
+        private final int PING_PIN = 13;
 	
 	public void run() { //Called by runner every time
 		
@@ -28,9 +28,7 @@ public class Bender {
 		ben.setPort("COM3"); // Set the port to COM3 
 		ben.setVerbose(true); // Turn on debugging messages 
 		ben.connect(); 
-		//ben.attachServo(RXTXRobot.SERVO1, 9); //Connect the servos to the Arduino 
-		//ben.attachServo(RXTXRobot.SERVO2, 10); 
-		
+                
 		// Get the average thermistor reading and pring results
 		int thermistorReading = getThermistorReading();
 		out.println("The probe read the value: " + thermistorReading);
@@ -40,15 +38,18 @@ public class Bender {
 		sc = new Scanner(System.in);
 		out.println("Input starting location [1-4] :: "); //Request for location
 		int pathNumber = sc.nextInt(); sc.nextLine(); //pathNumber now holds starting location
+                
+                //sensorTestingZone();
+                
 		switch (pathNumber) {
 		case 1:
-			runPath1();
+			runPath1(); //Run motors until it hits a bump sensor
 			break;
 		case 2:
-			runPath2();
+			runPath2(); //Drive forward 3 meters
 			break;
 		case 3:
-			runPath3();
+			runPath3();//Ping sensor test
 			break;
 		case 4:
 			runPath4();
@@ -60,18 +61,32 @@ public class Bender {
 		}
 			
 	}
-	private void runPath1() {
-		
+	private void runPath1() { //Run motors until it hits a bump sensor
+                
+                ben.runMotor(RXTXRobot.MOTOR1, 500, RXTXRobot.MOTOR2, 500, 0); // Run both motors forward indefinitely 
+                AnalogPin bumpSense = ben.getAnalogPin(2); //Bump sensor
+		do {
+                    
+                } while (bumpSense.getValue() != 0); //while no bump detected, keep going
+                ben.runMotor(RXTXRobot.MOTOR1,0,RXTXRobot.MOTOR2,0,0); // Stop both motors         
 		ben.close(); 
 	}
 	
-	private void runPath2() {
+	private void runPath2() { //Drive forward 3 meters
 		
 		ben.close(); 
 	}
 
-	private void runPath3() {
-		
+	private void runPath3() { //Ping sensor test
+                
+		for (int x=0; x < 3; ++x) 
+		{ 
+			//Read the ping sensor value, which is connected to pin 12
+                        ben.refreshDigitalPins();
+			out.println("Response: " + ben.getPing(PING_PIN) + " cm");
+			ben.sleep(300); 
+		} 
+
 		ben.close(); 
 	}
 
@@ -94,7 +109,8 @@ public class Bender {
 		 }
 
 		 //Return the average reading
-		 return adjThermistorReading(sum / readingCount);
+		 //return adjThermistorReading(sum / readingCount);
+                 return(sum / readingCount);
 	}
 	
 	private int adjThermistorReading(double reading) {
