@@ -19,7 +19,7 @@ public class Bender {
 
 	private Scanner sc;
 	private RXTXRobot ben;
-        private final int PING_PIN = 13;
+        private final int PING_PIN = 12;
 	
 	public void run() { //Called by runner every time
 		
@@ -28,19 +28,21 @@ public class Bender {
 		ben.setPort("COM3"); // Set the port to COM3 
 		ben.setVerbose(true); // Turn on debugging messages 
 		ben.connect(); 
+                ben.attachMotor(RXTXRobot.MOTOR1, 5); //Connect the motors to the Arduino
+                ben.attachMotor(RXTXRobot.MOTOR2, 6);
+                ben.attachServo(RXTXRobot.SERVO1, 9); //Connect the servos to the Arduino 
                 
 		// Get the average thermistor reading and pring results
 		int thermistorReading = getThermistorReading();
-		out.println("The probe read the value: " + thermistorReading);
-		out.println("In volts: " + (thermistorReading * (5.0/1023.0)));
+		//out.println("The probe read the value: " + thermistorReading);
+		//out.println("In volts: " + (thermistorReading * (5.0/1023.0)));
+                out.println(adjThermistorReading(thermistorReading));
 
 		//Next, select starting location
 		sc = new Scanner(System.in);
 		out.println("Input starting location [1-4] :: "); //Request for location
 		int pathNumber = sc.nextInt(); sc.nextLine(); //pathNumber now holds starting location
-                
-                //sensorTestingZone();
-                
+              
 		switch (pathNumber) {
 		case 1:
 			runPath1(); //Run motors until it hits a bump sensor
@@ -73,16 +75,22 @@ public class Bender {
 	}
 	
 	private void runPath2() { //Drive forward 3 meters
-		
+		ben.runMotor(RXTXRobot.MOTOR1, 500, RXTXRobot.MOTOR2, 500, 0); // Run both motors forward indefinitely 
+		ben.sleep(1000); // Pause execution for 5 seconds, but the motors keep running. 
+		ben.runMotor(RXTXRobot.MOTOR1,0,RXTXRobot.MOTOR2,0,0); // Stop both motors 
+                
+                ben.runMotor(RXTXRobot.MOTOR1, -500, RXTXRobot.MOTOR2, -500, 0); // Run both motors forward indefinitely 
+		ben.sleep(1000); // Pause execution for 5 seconds, but the motors keep running. 
+		ben.runMotor(RXTXRobot.MOTOR1,0,RXTXRobot.MOTOR2,0,0); // Stop both motors 
+                
 		ben.close(); 
 	}
 
 	private void runPath3() { //Ping sensor test
                 
-		for (int x=0; x < 3; ++x) 
-		{ 
-			//Read the ping sensor value, which is connected to pin 12
-                        ben.refreshDigitalPins();
+		for (int x=0; x < 100; ++x) 
+		{
+			//Read the ping sensor value, which is connected to pin 12            
 			out.println("Response: " + ben.getPing(PING_PIN) + " cm");
 			ben.sleep(300); 
 		} 
@@ -90,8 +98,10 @@ public class Bender {
 		ben.close(); 
 	}
 
-	private void runPath4() {
-		
+	private void runPath4() { //Servo test
+                ben.moveServo(RXTXRobot.SERVO1, 30);
+                ben.sleep(300);
+       
 		ben.close(); 
 	}
 	
@@ -115,8 +125,8 @@ public class Bender {
 	
 	private int adjThermistorReading(double reading) {
 		double adjReading = reading; //make reading double
-		double intercept = 1.0; 
-		double slope = 1.0;
+		double intercept = 44.7593361; 
+		double slope = -1.022821577;
 		
 		
 		adjReading = (adjReading - intercept) / slope;
